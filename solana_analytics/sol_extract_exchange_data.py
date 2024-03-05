@@ -7,6 +7,7 @@ cg = CoinGeckoAPI()
 
 # Calculate the date 3 months ago from today dynamically
 #three_months_ago = (datetime.today() - timedelta(days=90)).strftime('%d-%m-%Y')
+# Calculate the date 3 months ago from today dynamically
 three_months_ago = (datetime.today() - timedelta(days=356)).strftime('%d-%m-%Y')
 
 # Get historical data for Solana (SOL) up to the current date
@@ -20,6 +21,7 @@ sol_data = cg.get_coin_market_chart_range_by_id(
 # Extracting price data
 prices = sol_data['prices']
 volumes = sol_data['total_volumes']
+
 
 # Creating a DataFrame for prices
 df_prices = pd.DataFrame(prices, columns=['timestamp', 'price'])

@@ -1,15 +1,19 @@
-# Based on Linear Regression
-from pyspark.sql import SparkSession
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.regression import LinearRegression
 from pyspark.ml.evaluation import RegressionEvaluator
 
-# Initialize Spark Session
-spark = SparkSession.builder.appName("SolanaPricePrediction").getOrCreate()
+file_location = "/FileStore/tables/sol_exchange_data.csv"
+file_type = "csv"
 
-# Load the dataset /FileStore/tables/sol_exchange_data.csv
-data_path = "../data/sol_exchange_data.csv"
-df = spark.read.csv(data_path, header=True, inferSchema=True)
+# apply options for csv files
+df = spark.read.csv(file_location, header=True, inferSchema=True)
+
+# Run above code in Databricks Notebook for illustrations
+df.printSchema()
+df.show()
+df.select("open_price")
+
+#  Run code for linear regression lecture
 
 # Selecting the features (independent variables) and the label (dependent variable)
 df = df.select("open_price", "close_price")
@@ -36,12 +40,11 @@ evaluator = RegressionEvaluator(labelCol="close_price", predictionCol="predictio
 rmse = evaluator.evaluate(predictions)
 print(f"Root Mean Squared Error (RMSE) on test data: {rmse}")
 
-# Show model coefficients
+# Show model coefficients and intercept
 print(f"Coefficients: {lr_model.coefficients} Intercept: {lr_model.intercept}")
 
-# Example of making a prediction
-# Assuming you want to predict the closing price for an opening price of 60
+# Example of making a prediction for a given open price of 60
 new_data = spark.createDataFrame([(60,)], ["open_price"])
 new_data = featureAssembler.transform(new_data)
 new_prediction = lr_model.transform(new_data)
-new_prediction.show()
+new_prediction.select("prediction").show()
