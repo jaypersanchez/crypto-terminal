@@ -1,3 +1,6 @@
+'''
+This is a yearly extract starting from current date and 365 days back
+'''
 from pycoingecko import CoinGeckoAPI
 from datetime import datetime, timedelta
 import pandas as pd
@@ -5,9 +8,10 @@ import pandas as pd
 # Initialize the CoinGecko API client
 cg = CoinGeckoAPI()
 
-# Calculate the date 3 months ago from today dynamically
-#three_months_ago = (datetime.today() - timedelta(days=90)).strftime('%d-%m-%Y')
-# Calculate the date 3 months ago from today dynamically
+'''
+Calculate the date and a year back
+leaving the 'three_months_ago variable to minimize any changes
+'''
 three_months_ago = (datetime.today() - timedelta(days=356)).strftime('%d-%m-%Y')
 
 # Get historical data for Solana (SOL) up to the current date
@@ -51,4 +55,4 @@ df_grouped.set_index('date', inplace=True)
 print(df_grouped)
 
 # Optionally, save the data to a CSV file for offline analysis or backup
-df_grouped.to_csv('../data/sol_exchange_data_yearly.csv')
+df_grouped.to_csv('../data/sol_yearly_extract_exchange_data.csv')
