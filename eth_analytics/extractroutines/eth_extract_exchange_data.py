@@ -1,7 +1,7 @@
 '''
-This SOL data extract can be run at anytime since it will take
+This ETH data extract can be run at any time since it will take
 the most recent trading date and extract data the next day up to the current date.
-This way, this can be run at anytime and it will be sure to get the most recent data.
+This way, this can be run at any time and it will be sure to get the most recent data.
 '''
 from pycoingecko import CoinGeckoAPI
 from datetime import datetime, timedelta
@@ -11,7 +11,7 @@ import pandas as pd
 cg = CoinGeckoAPI()
 
 # Load the existing data to find the most recent date
-existing_df = pd.read_csv('../../data/sol_yearly_extract_exchange_data.csv')
+existing_df = pd.read_csv('../../data/eth_yearly_extract_exchange_data.csv')
 latest_date_str = existing_df['date'].max()  # Get the latest date in string format
 latest_date = datetime.strptime(latest_date_str, '%Y-%m-%d')  # Convert to datetime object
 
@@ -25,17 +25,17 @@ end_date = datetime.now()
 from_timestamp = int(start_date.timestamp())
 to_timestamp = int(end_date.timestamp())
 
-# Get historical data for Solana (SOL) starting from one day after the latest date in the CSV up to the current date
-sol_data = cg.get_coin_market_chart_range_by_id(
-    id='solana',
+# Get historical data for Ethereum (ETH) starting from one day after the latest date in the CSV up to the current date
+eth_data = cg.get_coin_market_chart_range_by_id(
+    id='ethereum',
     vs_currency='usd',
     from_timestamp=from_timestamp,
     to_timestamp=to_timestamp
 )
 
 # Extract price and volume data
-prices = sol_data['prices']
-volumes = sol_data['total_volumes']
+prices = eth_data['prices']
+volumes = eth_data['total_volumes']
 
 # Creating DataFrames for prices and volumes with 'date' column
 df_prices = pd.DataFrame(prices, columns=['timestamp', 'price'])
@@ -57,7 +57,7 @@ df_grouped = df_merged.groupby('date').agg(
     avg_volume=('volume', 'mean')
 ).reset_index()
 
-# Append the new data to the existing CSV file
-df_grouped.to_csv('../data/sol_yearly_extract_exchange_data.csv', mode='a', header=False, index=False)
+# Append the new data to the existing CSV file for Ethereum
+df_grouped.to_csv('../../data/eth_yearly_extract_exchange_data.csv', mode='a', header=False, index=False)
 
-print("Data appended successfully to '../../data/sol_yearly_extract_exchange_data.csv'.")
+print("Data appended successfully to '../../data/eth_yearly_extract_exchange_data.csv'.")

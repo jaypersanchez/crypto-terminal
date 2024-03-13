@@ -1,5 +1,5 @@
 '''
-This is a yearly extract starting from current date and 365 days back
+This is a yearly extract starting from the current date and going 365 days back
 '''
 from pycoingecko import CoinGeckoAPI
 from datetime import datetime, timedelta
@@ -9,23 +9,22 @@ import pandas as pd
 cg = CoinGeckoAPI()
 
 '''
-Calculate the date and a year back
-leaving the 'three_months_ago variable to minimize any changes
+Calculate the date a year back
+leaving the 'three_months_ago' variable name to minimize changes
 '''
 three_months_ago = (datetime.today() - timedelta(days=356)).strftime('%d-%m-%Y')
 
-# Get historical data for Solana (SOL) up to the current date
-sol_data = cg.get_coin_market_chart_range_by_id(
-    id='solana',
+# Get historical data for Ethereum (ETH) up to the current date
+eth_data = cg.get_coin_market_chart_range_by_id(
+    id='ethereum',
     vs_currency='usd',
     from_timestamp=datetime.strptime(three_months_ago, '%d-%m-%Y').timestamp(),
     to_timestamp=datetime.now().timestamp()
 )
 
 # Extracting price data
-prices = sol_data['prices']
-volumes = sol_data['total_volumes']
-
+prices = eth_data['prices']
+volumes = eth_data['total_volumes']
 
 # Creating a DataFrame for prices
 df_prices = pd.DataFrame(prices, columns=['timestamp', 'price'])
@@ -55,4 +54,4 @@ df_grouped.set_index('date', inplace=True)
 print(df_grouped)
 
 # Optionally, save the data to a CSV file for offline analysis or backup
-df_grouped.to_csv('../../data/sol_yearly_extract_exchange_data.csv')
+df_grouped.to_csv('../../data/eth_yearly_extract_exchange_data.csv')
