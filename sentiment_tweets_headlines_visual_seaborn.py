@@ -1,6 +1,6 @@
 '''
 This sentiment analysis loads partial data for the purpose of illustration of sentiment analysis.
-Uses Matplotlib for visual illustration
+Uses Seaborn for visual illustration
 '''
 import pandas as pd
 from textblob import TextBlob
@@ -48,8 +48,9 @@ print(f"Average Sentiment Polarity: {average_sentiment:.2f}")
 # Optionally, explore the distribution of sentiments
 import matplotlib.pyplot as plt
 
+# Plot the distribution of sentiment scores using Seaborn
 plt.figure(figsize=(10, 6))
-plt.hist(df['Sentiment'], bins=30, color='skyblue', edgecolor='black')
+sns.histplot(df['Sentiment'], kde=True, bins=30, color='skyblue', edgecolor='black')
 plt.title('Distribution of Sentiment Polarity')
 plt.xlabel('Sentiment Polarity')
 plt.ylabel('Count')
