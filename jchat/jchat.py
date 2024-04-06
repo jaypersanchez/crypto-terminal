@@ -1,7 +1,5 @@
 import openai
 
-openai.api_key="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"
-
 def get_response(prompt_text):
     response = openai.Completion.create(
       engine="gpt-3.5-turbo-0125",  # Choose the model
