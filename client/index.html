@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virland Financials</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { margin: 20px; }
+        .search-box { margin-bottom: 20px; }
+        .results, .prices { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="search-box">
+            <label for="query">Ask Virland:</label>
+            <input type="text" id="query">
+            <button onclick="performSearch()">Ask</button>
+            <button onclick="showCurrentPrices()">Current MATIC Price</button>
+        </div>
+        <div class="results">
+            <h2>Search Results:</h2>
+            <ul id="searchResults"></ul>
+        </div>
+        <div class="prices">
+            <h2>Current Prices:</h2>
+            <!-- Dropdown for selecting a cryptocurrency -->
+            <select id="cryptoSelect">
+                <option value="bitcoin">BTC</option>
+                <option value="ethereum">ETH</option>
+                <option value="solana">SOL</option>
+                <option value="matic-network">MATIC</option>
+            </select>
+            <button onclick="showCurrentPrices()">Load Prices</button>
+            <p id="priceInfo">Click "Load Prices" to display...</p>
+        </div>
+    </div>
+
+    <script>
+        // Mock function to perform search (replace with actual API call)
+        function performSearch() {
+            const query = document.getElementById('query').value;
+            const resultsElement = document.getElementById('searchResults');
+            resultsElement.innerHTML = ''; // Clear previous results
+            // Here, you'd typically make an API call to get search results based on the query
+            // For demonstration, we're just adding a mock result:
+            const listItem = document.createElement('li');
+            listItem.textContent = `Result for "${query}"`;
+            resultsElement.appendChild(listItem);
+        }
+
+        // Function to show current prices by fetching from your API endpoint
+        async function showCurrentPrices() {
+            const priceInfoElement = document.getElementById('priceInfo');
+            const selectedCrypto = document.getElementById('cryptoSelect').value;
+            try {
+                // Make a request to your endpoint
+                const response = await fetch(`http://127.0.0.1:5005/crypto-price/${selectedCrypto}`);
+                // Check if the request was successful
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                // Parse the JSON response
+                const data = await response.json();
+                // Assuming the API returns data in the format: { current_price_usd, market_cap_usd, "24h_volume_usd" }
+                const currentDate = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
+                priceInfoElement.textContent = `Current Price: $${data.current_price_usd} as of ${currentDate}\n` +
+                                            `Market Cap: $${data.market_cap_usd}\n` +
+                                            `24h Trading Volume: $${data["24h_volume_usd"]}`;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                priceInfoElement.textContent = 'Failed to fetch current prices.';
+            }
+        }
+    </script>
+</body>
+</html>
