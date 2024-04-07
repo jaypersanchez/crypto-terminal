@@ -152,30 +152,6 @@ async function showMonthGraph() {
     }
 }
 
-// Function to show current prices by fetching from your API endpoint
-async function showCurrentPricesOLD() {
-    const priceInfoElement = document.getElementById('priceInfo');
-    const selectedCrypto = document.getElementById('cryptoSelect').value;
-    try {
-        // Make a request to your endpoint
-        const response = await fetch(`http://127.0.0.1:5005/crypto-price/${selectedCrypto}`);
-        // Check if the request was successful
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        // Parse the JSON response
-        const data = await response.json();
-        // Assuming the API returns data in the format: { current_price_usd, market_cap_usd, "24h_volume_usd" }
-        const currentDate = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
-        priceInfoElement.textContent = `Current Price: $${data.current_price_usd} as of ${currentDate}\n` +
-                                    `Market Cap: $${data.market_cap_usd}\n` +
-                                    `24h Trading Volume: $${data["24h_volume_usd"]}`;
-    } catch (error) {
-        console.error('Fetch error:', error);
-        priceInfoElement.textContent = 'Failed to fetch current prices.';
-    }
-}
-
 async function connectWallet() {
     if (window.ethereum) { // Check if MetaMask is installed
         try {
@@ -198,5 +174,59 @@ async function connectWallet() {
         console.log('MetaMask is not installed!');
     }
 }
+
+async function fetchSwapQuote(sellToken, buyToken) {
+    // Example URL, adjust according to the actual API you're using
+    const apiUrl = `https://api.example.com/swap?sellToken=${sellToken}&buyToken=${buyToken}`;
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        return { price: data.price }; // Simplified, adjust based on the real data structure
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+    }
+}
+
+async function fetchBestSwapPrices(sellToken) {
+    // Define a list of assets for swapping. This could also be dynamic based on your app's context.
+    const buyTokens = ['ETH', 'DAI', 'USDC'];
+    const sellAmount = ethers.utils.parseUnits('1.0', '18').toString(); // Example: selling 1.0 token. Adjust the decimals as needed.
+
+    const promises = buyTokens.map(async (buyToken) => {
+        const response = await fetch(`https://api.0x.org/swap/v1/quote?sellToken=${sellToken}&buyToken=${buyToken}&sellAmount=${sellAmount}`);
+        if (response.ok) {
+            const data = await response.json();
+            return { buyToken, price: data.price, to: data.to, estimatedGas: data.estimatedGas };
+        }
+        return { buyToken, error: 'Failed to fetch price' };
+    });
+
+    return Promise.all(promises);
+}
+
+async function showBestSwapPrices() {
+    const selectedCrypto = document.getElementById('cryptoSelect').value;
+    // Define a few example assets to swap to or make this dynamic
+    const assetsToCheck = ['ETH', 'DAI', 'USDC']; // Example tokens
+
+    const swapPricesContainer = document.getElementById('swapPrices');
+    swapPricesContainer.innerHTML = ''; // Clear previous results
+
+    for (let asset of assetsToCheck) {
+        const quote = await fetchSwapQuote(selectedCrypto, asset);
+        if (quote) {
+            // Display the swap price. Adjust according to the data structure
+            const priceElement = document.createElement('p');
+            priceElement.textContent = `Swap ${selectedCrypto} to ${asset}: ${quote.price} ${asset}`;
+            swapPricesContainer.appendChild(priceElement);
+        } else {
+            // Handle the error or no data case
+            swapPricesContainer.textContent = 'Could not fetch swap prices.';
+        }
+    }
+}
+
 
 document.getElementById('connectWalletButton').addEventListener('click', connectWallet);

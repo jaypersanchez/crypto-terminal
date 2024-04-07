@@ -40,11 +40,14 @@
                     <option value="matic-network">MATIC</option>
                 </select>
                 <div class="row row-no-gutter">
-                    <button onclick="showMonthGraph()">Load Price Graph</button>
+                    <button onclick="showMonthGraph(); showBestSwapPrices();">Load Price Graph</button>
                 </div>
             </div>
             <p id="priceInfo">Click "Load Prices" to display...</p>
+            <div>
             <div id="chart"></div>
+            <div id="swapPrices">Best swap prices will be displayed here...</div>
+            </div>
         </div>
     </div>
     <script src="scripts.js"></script>
