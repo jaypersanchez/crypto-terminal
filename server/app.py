@@ -6,6 +6,8 @@ import os
 import psycopg2
 from transformers import AutoTokenizer, AutoModel
 import torch
+from sklearn.linear_model import LinearRegression
+import pandas as pd
 
 app = Flask(__name__)
 CORS(app)
@@ -140,6 +142,29 @@ def semantic_search():
     # Return the list of results
     print(fetched_results)
     return fetched_results
+
+@app.route('/predict-close-price', methods=['POST'])
+def predict_close_price():
+    # Extract data from request
+    data = request.get_json()
+    df = pd.DataFrame(data)
+    
+    # Assuming 'open_price' and 'close_price' are in the DataFrame
+    X = df[['open_price']].values  # Features
+    y = df['close_price'].values  # Target variable
+
+    # Splitting not needed if we are predicting for new/future data
+    # Train the model on the entire dataset
+    model = LinearRegression()
+    model.fit(X, y)
+    
+
+    # Assuming you want to predict the close price for the same dates
+    # For new predictions, replace X with new data
+    predictions = model.predict(X)
+
+    # Return the predictions
+    return jsonify(predictions.tolist())
         
 if __name__ == '__main__':
     app.run(debug=True, port=5005)

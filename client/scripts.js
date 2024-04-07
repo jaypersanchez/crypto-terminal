@@ -247,5 +247,79 @@ async function showBestSwapPrices() {
     }
 }
 
+async function predictAndShowGraph() {
+    const selectedCrypto = document.getElementById('cryptoSelect').value;
+    try {
+        const response = await fetch(`http://127.0.0.1:5005/crypto-data/${selectedCrypto}`);
+        const data = await response.json();
+
+        // Now send this data to the Flask endpoint for prediction
+        const predictResponse = await fetch('http://127.0.0.1:5005/predict-close-price', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!predictResponse.ok) {
+            throw new Error(`HTTP error! status: ${predictResponse.status}`);
+        }
+
+        const predictions = await predictResponse.json();
+        
+        // Assuming the dates are sequential and starting from the last date in `data`
+        let lastDate = new Date(data[data.length - 1].date); // Assuming `data` has a `date` property
+        const predictionDates = predictions.map((_, index) => {
+            let newDate = new Date(lastDate);
+            newDate.setDate(newDate.getDate() + index + 1); // Increment date by 1 for each prediction
+            return newDate.getTime(); // Convert to timestamp
+        });
+
+        // Creating a series for ApexCharts
+        const predictionSeries = predictions.map((pred, index) => {
+            return {
+                x: predictionDates[index],
+                y: pred
+            };
+        });
+
+        // Graphing with ApexCharts
+        var options = {
+            chart: {
+                type: 'scatter',
+                height: 350
+            },
+            series: [{
+                name: 'Predicted Close Price',
+                data: predictionSeries
+            }],
+            xaxis: {
+                type: 'datetime',
+                title: {
+                    text: 'Date'
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Close Price'
+                }
+            },
+            tooltip: {
+                x: {
+                    format: 'dd MMM yyyy'
+                }
+            }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#predictionChart"), options);
+        chart.render();
+        
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Don't forget to call predictAndShowGraph() when needed, for example after selecting a crypto
 
 document.getElementById('connectWalletButton').addEventListener('click', connectWallet);
