@@ -1,16 +1,35 @@
-// Mock function to perform search (replace with actual API call)
-function performSearch() {
+async function performSearch() {
     const query = document.getElementById('query').value;
+    console.log(`${query}`)
     const resultsElement = document.getElementById('searchResults');
     resultsElement.innerHTML = ''; // Clear previous results
+    const url = `http://127.0.0.1:5005/search`;
     // Here, you'd typically make an API call to get search results based on the query
     // For demonstration, we're just adding a mock result:
-    const listItem = document.createElement('li');
-    listItem.textContent = `Result for "${query}"`;
-    resultsElement.appendChild(listItem);
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: query }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        // Assuming data is an array of strings or objects
+        data.forEach(item => {
+            const listItem = document.createElement('li');
+            // If 'item' is a string:
+            listItem.textContent = item;
+            // If 'item' is an object, adjust accordingly, e.g.:
+            // listItem.textContent = `Input: ${item.input}, Output: ${item.output}`;
+            resultsElement.appendChild(listItem);
+        });
+    })
+    .catch(error => console.error('Error:', error));
 }
 
-function calculateSMA(data, period) {
+async function calculateSMA(data, period) {
     let sma = data.map((val, index, arr) => {
         if (index < period - 1) return null; // Not enough data to calculate SMA
         let sum = 0;
