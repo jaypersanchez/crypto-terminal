@@ -1,0 +1,149 @@
+/* style.css */
+:root {
+    --polygon-blue: #8247E5; /* Primary color */
+    --dark-blue: #3B3A6F; /* Secondary color */
+    --light-grey: #F6F6F6; /* Background color */
+    --white: #FFFFFF; /* For backgrounds and fonts */
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--dark-blue);
+    background-color: var(--light-grey);
+    margin: 0;
+    padding: 0;
+}
+
+button, .button {
+    background-color: var(--polygon-blue);
+    color: var(--white);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+button:hover, .button:hover {
+    background-color: #6e3cc8; /* A darker shade of --polygon-blue for hover effect */
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+}
+
+.card {
+    background-color: var(--white);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .container, .card {
+        padding: 10px;
+    }
+
+    button, .button {
+        padding: 8px 16px; /* Slightly smaller padding on mobile */
+    }
+}
+
+.dropdown-sort {
+    /* Styling for the dropdown */
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+/* Example flex class, might not be applicable directly to <select> */
+.flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.controls {
+    display: flex;
+    justify-content: flex-start; /* Aligns items to the start, making them sit side by side */
+    align-items: center; /* Centers items vertically */
+    gap: 10px; /* Adjust the gap between the select and the button */
+}
+
+/* If you want the select and button to fill the container */
+.dropdown-sort, .row-no-gutter {
+    flex: 1; /* Causes the select and button to expand to fill the container */
+}
+
+.row-no-gutter button {
+    width: 100%; /* Makes the button expand to fill its container */
+}
+
+.row {
+    /* Your existing styles */
+    margin-top: 15px; /* Adjust the value as needed */
+}
+
+
+.d-flex {
+    display: flex;
+    gap: 10px; /* Adjust as needed */
+}
+
+.input-box {
+    /* Input box styling */
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.align-self-center {
+    align-self: center;
+}
+
+.sort-box {
+    display: block; /* Ensure it fills the width of its container */
+    width: 100%; /* Adjust width as needed */
+    padding: 8px 12px; /* Padding inside the textarea */
+    font-size: 16px; /* Match the font styling of your site */
+    border: 1px solid #ccc; /* Border styling */
+    border-radius: 4px; /* Rounded corners */
+    box-sizing: border-box; /* Ensures padding does not add to the width */
+    resize: vertical; /* Allows vertical resizing only. Set to 'none' to disable resizing. */
+}
+
+.results {
+    border: 1px solid #ccc; /* Light border similar to default textarea */
+    border-radius: 4px; /* Rounded corners */
+    padding: 10px; /* Padding inside the div */
+    min-height: 150px; /* Minimum height to make it visible even when empty */
+    box-sizing: border-box; /* Ensures padding and border are included in the width and height */
+    background-color: #fafafa; /* Light background color */
+    overflow-y: auto; /* Allows scrolling for overflow content */
+}
+
+.results ul {
+    list-style-type: none; /* Removes bullet points */
+    margin: 0; /* Removes default margin */
+    padding: 0; /* Removes default padding */
+    line-height: 1.6; /* Adjusts line spacing to improve readability */
+}
+
+.results ul li {
+    margin-bottom: 5px; /* Space between list items, simulating paragraph breaks */
+}
+
