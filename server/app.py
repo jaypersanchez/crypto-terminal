@@ -1,9 +1,62 @@
 from flask import Flask, jsonify
 from pycoingecko import CoinGeckoAPI
 from flask_cors import CORS
+import pandas as pd
+import os
 
 app = Flask(__name__)
 CORS(app)
+
+def get_recent_month_data(crypto_id):
+    # Mapping crypto_id to its corresponding CSV file
+    print(f"{crypto_id}")
+    crypto_file_mapping = {
+        'bitcoin': 'btc_yearly_extract_exchange_data.csv',
+        'ethereum': 'eth_yearly_extract_exchange_data.csv',
+        'solana': 'sol_yearly_extract_exchange_data.csv',
+        'matic-network': 'matic_yearly_extract_exchange_data.csv'
+    }
+    
+    filename = crypto_file_mapping.get(crypto_id.lower())
+    print(f"{filename}")
+    if not filename:
+        return None
+
+    # Adjust the path to go up one directory and then into the 'data' directory
+    file_path = os.path.join(os.path.dirname(__file__), '..', 'data', filename)
+
+    # Normalize the path to resolve any ".."
+    file_path = os.path.normpath(file_path)
+    print(f"{file_path}")
+    if not os.path.exists(file_path):
+        return None
+    
+    # Load the CSV file
+    df = pd.read_csv(file_path)
+    
+    # Assuming there's a 'date' column in your CSV
+    df['date'] = pd.to_datetime(df['date'])
+    
+    # Find the most recent month and year in the data
+    most_recent_year = df['date'].dt.year.max()
+    most_recent_month = df[df['date'].dt.year == most_recent_year]['date'].dt.month.max()
+       
+    # Filter the DataFrame for rows from the most recent month
+    recent_month_data = df[(df['date'].dt.year == most_recent_year) & (df['date'].dt.month == most_recent_month)]
+    
+    # Convert the filtered DataFrame to a list of dictionaries for JSON response
+    data_list = recent_month_data.to_dict('records')
+        
+    return data_list
+
+@app.route('/crypto-data/<crypto_id>', methods=['GET'])
+def crypto_data(crypto_id):
+    data = get_recent_month_data(crypto_id)
+    print(f"{data}")
+    if data:
+        return jsonify(data), 200
+    else:
+        return jsonify({"error": "Data not found for the specified cryptocurrency"}), 404
 
 def get_current_price(crypto_id):
     # Initialize the CoinGecko API client
