@@ -175,3 +175,28 @@ async function showCurrentPricesOLD() {
         priceInfoElement.textContent = 'Failed to fetch current prices.';
     }
 }
+
+async function connectWallet() {
+    if (window.ethereum) { // Check if MetaMask is installed
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }); // Request account access
+            const account = accounts[0]; // Get the first account
+            document.getElementById('connectWalletButton').innerText = `Connected: ${account}`;
+            
+            // Optionally, get and display the wallet's balance
+            const balance = await window.ethereum.request({
+                method: 'eth_getBalance',
+                params: [account, 'latest']
+            });
+            const formattedBalance = ethers.utils.formatEther(balance); // Format balance
+            document.getElementById('connectWalletButton').innerText += ` - Balance: ${formattedBalance} ETH`;
+            
+        } catch (error) {
+            console.error(error);
+        }
+    } else {
+        console.log('MetaMask is not installed!');
+    }
+}
+
+document.getElementById('connectWalletButton').addEventListener('click', connectWallet);

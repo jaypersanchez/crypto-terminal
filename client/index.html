@@ -11,18 +11,22 @@
         .search-box { margin-bottom: 20px; }
         .results, .prices { margin-top: 20px; }
     </style>
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 <body>
     <div class="container">
+        <div class="row row-no-gutter">
+            <button id="connectWalletButton">Connect Wallet</button>
+        </div>
         <div class="search-box">
             <textarea class="sort-box cursor-pointer align-self-center" id="query" placeholder="Ask Virland" rows="4"></textarea>
             <div class="row row-no-gutter">
-                <button onclick="performSearch()">Ask Virlan</button>
+                <button onclick="performSearch()">Ask Virland</button>
             </div>
         </div>
         <div class="results">
-            <h3>Virland's Response</h3>
+            <h4>Virland's Response</h4>
             <ul id="searchResults"></ul>
         </div>
         <div class="prices">
