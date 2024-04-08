@@ -341,6 +341,47 @@ async function predictAndShowGraph() {
     }
 }
 
-// Don't forget to call predictAndShowGraph() when needed, for example after selecting a crypto
+async function fetchVolatilityIndex() {
+    // Get the currently selected cryptocurrency ID from the dropdown
+    const cryptoId = document.getElementById('cryptoSelect').value;
 
+    try {
+        // Fetch the volatility index from the Flask endpoint
+        const response = await fetch(`http://127.0.0.1:5005/volatility/${cryptoId}`);
+        
+        if (!response.ok) {
+            // Handle HTTP errors
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Update the volatility index display with the fetched value
+        //document.getElementById('volatilityValue').innerText = data.volatility_index.toFixed(2);
+        const volatilityIndex = data.volatility_index.toFixed(2);
+
+        // Update the volatility index display with the fetched value
+        const volatilityValueElement = document.getElementById('volatilityValue');
+        volatilityValueElement.innerText = volatilityIndex + '%';
+
+        // Determine and set the color based on the volatility index
+        if (volatilityIndex <= 20) {
+            // Not Volatile (Low Volatility) - Yellow
+            volatilityValueElement.style.color = 'green';
+        } else if (volatilityIndex <= 40) {
+            // Medium Volatile - Purple
+            volatilityValueElement.style.color = 'purple';
+        } else {
+            // Very Volatile (High Volatility) - Red
+            volatilityValueElement.style.color = 'red';
+        }
+    } catch (error) {
+        console.error('Failed to fetch the volatility index:', error);
+        // Optionally update the UI to indicate the error
+        document.getElementById('volatilityValue').innerText = 'Error fetching data';
+    }
+}
+
+// Don't forget to call predictAndShowGraph() when needed, for example after selecting a crypto
 document.getElementById('connectWalletButton').addEventListener('click', connectWallet);
+document.getElementById('cryptoSelect').addEventListener('change', fetchVolatilityIndex);

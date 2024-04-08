@@ -147,3 +147,24 @@ button:hover, .button:hover {
     margin-bottom: 5px; /* Space between list items, simulating paragraph breaks */
 }
 
+#volatilityLegend {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    gap: 10px;
+    padding: 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    border: 1px solid #000; /* Optional: adds a border around the color square */
+}
+

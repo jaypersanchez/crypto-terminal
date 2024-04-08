@@ -7,7 +7,7 @@ import psycopg2
 from transformers import AutoTokenizer, AutoModel
 import torch
 from sklearn.linear_model import LinearRegression
-import pandas as pd
+import numpy as np
 
 app = Flask(__name__)
 CORS(app)
@@ -165,6 +165,36 @@ def predict_close_price():
 
     # Return the predictions
     return jsonify(predictions.tolist())
+
+@app.route('/volatility/<crypto_id>', methods=['GET'])
+def get_volatility(crypto_id):
+    # Mapping crypto_id to its corresponding CSV file
+    crypto_file_mapping = {
+        'bitcoin': 'btc_yearly_extract_exchange_data.csv',
+        'ethereum': 'eth_yearly_extract_exchange_data.csv',
+        'solana': 'sol_yearly_extract_exchange_data.csv',
+        'matic-network': 'matic_yearly_extract_exchange_data.csv'
+    }
+    
+    filename = crypto_file_mapping.get(crypto_id.lower())
+    if not filename:
+        return jsonify({'error': 'Unsupported cryptocurrency ID'}), 404
+
+    file_path = os.path.join(os.path.dirname(__file__), '..','data', filename)
+    if not os.path.exists(file_path):
+        return jsonify({'error': 'Data file not found'}), 404
+    
+    # Load the CSV file
+    df = pd.read_csv(file_path)
+
+    # Calculate daily returns
+    df['close_price'] = df['close_price'].astype(float)  # Ensure close_price is float
+    df['daily_return'] = df['close_price'].pct_change()
+
+    # Calculate volatility as the standard deviation of daily returns
+    volatility = df['daily_return'].std()
+
+    return jsonify({'crypto_id': crypto_id, 'volatility_index': volatility})
         
 if __name__ == '__main__':
     app.run(debug=True, port=5005)
