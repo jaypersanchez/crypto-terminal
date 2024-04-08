@@ -176,7 +176,12 @@ async function connectWallet() {
         try {
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }); // Request account access
             const account = accounts[0]; // Get the first account
-            document.getElementById('connectWalletButton').innerText = `Connected: ${account}`;
+            // Get the chain ID
+            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+
+            // Map the chain ID to a network name
+            const networkName = getNetworkName(chainId);
+            document.getElementById('connectWalletButton').innerText = `${networkName}: ${account}`;
             
             // Optionally, get and display the wallet's balance
             const balance = await window.ethereum.request({
@@ -192,6 +197,22 @@ async function connectWallet() {
     } else {
         console.log('MetaMask is not installed!');
     }
+}
+
+function getNetworkName(chainId) {
+    // Mapping of common chain IDs to network names
+    const networkMap = {
+        '0x1': 'Ethereum Mainnet',
+        '0x3': 'Ropsten Testnet',
+        '0x4': 'Rinkeby Testnet',
+        '0x5': 'Goerli Testnet',
+        '0x2a': 'Kovan Testnet',
+        '0x89': 'Polygon Mainnet',
+        '0x13881': 'Polygon Mumbai Testnet',
+        // Add other networks as needed
+    };
+
+    return networkMap[chainId] || 'Unknown Network';
 }
 
 async function fetchSwapQuote(sellToken, buyToken) {
