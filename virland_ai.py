@@ -2,7 +2,26 @@ import json
 import random
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import torch
+import sys
+import subprocess
 
+# Try to install the package
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'sentence-transformers'])
+
+from sentence_transformers import SentenceTransformer
+
+def load_and_embed_responses(filename, model):
+    with open(filename, 'r', encoding='utf-8') as file:
+        responses = json.load(file)
+    
+    embeddings = model.encode(responses, convert_to_tensor=True)
+    return responses, embeddings
+
+# Initialize the model
+model_st = SentenceTransformer('all-MiniLM-L6-v2')
+
+# Preprocess and embed the responses
+responses, response_embeddings = load_and_embed_responses('data/cleaned_bitcoin_tweets.json', model_st)
 def load_responses():
     with open('data/cleaned_bitcoin_tweets.json', 'r', encoding='utf-8') as file:
         return json.load(file)
@@ -16,7 +35,7 @@ def setup_model():
     model = GPT2LMHeadModel.from_pretrained("gpt2")
     return tokenizer, model
 
-def generate_response(model, tokenizer, user_input, chat_history_ids, keywords, responses):
+'''def generate_response(model, tokenizer, user_input, chat_history_ids, keywords, responses):
     relevant_keywords = [kw for kw in keywords if kw in user_input.lower()]
     if relevant_keywords:
         # If relevant keywords are found, select a related tweet
@@ -39,23 +58,41 @@ def generate_response(model, tokenizer, user_input, chat_history_ids, keywords, 
     )
 
     response = tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
+    return response, chat_history_ids'''
+def find_semantic_response(user_input, responses, embeddings, model_st):
+    input_embedding = model_st.encode(user_input, convert_to_tensor=True)
+    similarities = util.pytorch_cos_sim(input_embedding, embeddings)
+    
+    # Find the index of the response with the highest cosine similarity
+    best_idx = torch.argmax(similarities)
+    return responses[best_idx]
+
+def generate_response(user_input, chat_history_ids, responses, response_embeddings, model_st):
+    if chat_history_ids is not None:
+        # Concatenate user input to the ongoing chat history for context
+        user_input = chat_history_ids + " " + user_input
+    
+    # Find the best semantic response
+    response = find_semantic_response(user_input, responses, response_embeddings, model_st)
+    chat_history_ids = (chat_history_ids + " " + response) if chat_history_ids else response
+    
     return response, chat_history_ids
 
 def main():
     print("Hello, I'm Virland, your crypto assistant. Ask me anything about crypto!")
-    responses = load_responses()  # Load preprocessed tweets as potential responses
-    keywords = load_keywords()  # Load the list of crypto keywords
-    tokenizer, model = setup_model()
-
-    chat_history_ids = None  # Initialize chat history
+    
+    # Load responses and pre-computed embeddings
+    responses, response_embeddings = load_and_embed_responses('data/cleaned_bitcoin_tweets.json', model_st)
+    
+    chat_history_ids = None  # This will store the context of the conversation
 
     while True:
         user_input = input("You: ")
         if user_input.lower() in ['exit', 'quit']:
             print("Virland: Goodbye!")
             break
-
-        response, chat_history_ids = generate_response(model, tokenizer, user_input, chat_history_ids, keywords, responses)
+        
+        response, chat_history_ids = generate_response(user_input, chat_history_ids, responses, response_embeddings, model_st)
         print(f"Virland: {response}")
 
 if __name__ == "__main__":
