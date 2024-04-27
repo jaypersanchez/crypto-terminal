@@ -5,6 +5,7 @@ import psycopg2
 import numpy as np
 from dotenv import load_dotenv
 import os
+import sys 
 
 # Load environment variables from .env file
 load_dotenv()
@@ -24,13 +25,19 @@ def compute_and_save_embeddings(source_file, db_params):
         cur = conn.cursor()
         
         # Insert each tweet and its corresponding embedding into the database
-        for response, embedding in zip(responses, embeddings):
+        total_responses = len(responses)
+        # Insert each tweet and its corresponding embedding into the database
+        for index, (response, embedding) in enumerate(zip(responses, embeddings), 1):
             # Ensure the embedding is in a format suitable for double precision array
             embedding_list = embedding.tolist()  # Convert numpy array to Python list
             cur.execute(
                 "INSERT INTO tweet_embeddings (tweet, embedding) VALUES (%s, %s)",
                 (response, embedding_list)
             )
+            
+            # Update the status on the same line in the console
+            sys.stdout.write(f"\rProcessing {index} of {total_responses}...")
+            sys.stdout.flush()
         
         # Commit the transaction and close the connection
         conn.commit()
