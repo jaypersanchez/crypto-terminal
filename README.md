@@ -30,7 +30,7 @@ Virland Financials is a financial research application meant to help investors f
     * This routines will extract from CoinGecko from the most recent record to current - matic_extract_exchange_data.py
     * This extract can be run if you need the current date back an entire year - matic_yearly_extract_exchange_data.py
 
-# Sentiment Analysis
+# Virland AI Data Sources for Training
 
 semantics\extractroutines
     * This extract routine takes it sources from Hugging face and saves the tweets in JSON format - tweets_headlines_data_source_json.py
