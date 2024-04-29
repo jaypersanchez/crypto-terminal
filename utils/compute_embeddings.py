@@ -70,7 +70,7 @@ def compute_and_save_embeddings(source_file, db_params):
         for batch_start in range(0, total_responses, BATCH_SIZE):
             batch_end = min(batch_start + BATCH_SIZE, total_responses)
             batch = [(responses[i], embeddings[i].tolist()) for i in range(batch_start, batch_end)]
-            cur.executemany("INSERT INTO tweet_embeddings (tweet, embedding) VALUES (%s, %s)", batch)
+            cur.executemany("INSERT INTO virland_vector (tweet_text, embedding) VALUES (%s, %s)", batch)
             conn.commit()  # Commit after each batch
 
             # Update the status on the same line in the console
