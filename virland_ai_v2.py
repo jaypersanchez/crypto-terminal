@@ -62,15 +62,15 @@ def intent_market_trends(user_input, detail=None):
 # Mapping of intents to functions
 intent_function_mapping = {
     "forecast": intent_forecasting,
-    "sentiment": intent_sentiment,
-    "investment_advice": intent_investment_advice,
+    "sentiment_analysis": intent_sentiment,
+    "investment_advice_and_decisions": intent_investment_advice,
     "portfolio_management": intent_portfolio_management,
     "technical_analysis": intent_technical_analysis,
-    "transaction_queries": intent_transaction_queries,
-    "economic_impact": intent_economic_impact,
+    "transaction_and_trading_queries": intent_transaction_queries,
+    "economic_impact_and_analysis": intent_economic_impact,
     "education_questions": intent_education_questions,
-    "news_updates": intent_news_updates,
-    "compliance_legal": intent_compliance_legal,
+    "news_and_updates": intent_news_updates,
+    "compliance_and_legal": intent_compliance_legal,
     "general": intent_general,
     "market_trends_and_forecasts": intent_market_trends
 }
@@ -89,29 +89,31 @@ def dispatch_intent(user_input, intent_keywords):
     
 def determine_intent(user_input, intent_keywords):
     user_input_lower = user_input.lower()
-    detected_categories = set()
+    detected_categories = {}
 
+    # Incorporate bi-grams and possibly tri-grams
     words = user_input_lower.split()
     for i in range(len(words) - 1):
         bi_gram = ' '.join(words[i:i+2])
         if bi_gram in intent_keywords:
-            detected_categories.update(intent_keywords[bi_gram])
+            for category in intent_keywords[bi_gram]:
+                detected_categories[category] = detected_categories.get(category, 0) + 2  # Higher weight for bi-grams
 
     for word in words:
         if word in intent_keywords:
-            detected_categories.update(intent_keywords[word])
+            for category in intent_keywords[word]:
+                detected_categories[category] = detected_categories.get(category, 0) + 1
 
-    print("Detected Categories:", detected_categories)  # Debug output
+    # Debug output
+    print("Detected Categories with scores:", detected_categories)
 
-    for priority_category in [
-        "Market Trends and Forecasts", "Sentiment Analysis", "Investment Advice and Decisions",
-        "Portfolio Management", "Technical Analysis", "Transaction and Trading Queries",
-        "Economic Impact and Analysis", "Educational Questions", "News and Updates",
-        "Compliance and Legal"
-    ]:
-        if priority_category in detected_categories:
-            return priority_category.lower().replace(" ", "_"), None
+    # Determine the most appropriate intent based on detected categories
+    if detected_categories:
+        # Get the category with the highest score
+        sorted_categories = sorted(detected_categories.items(), key=lambda x: x[1], reverse=True)
+        return sorted_categories[0][0].lower().replace(" ", "_"), None
     return "general", None
+
    
 def main():
     global intent_keywords
