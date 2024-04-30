@@ -1,3 +1,7 @@
+'''
+This routine consolidates all the exchange data sources into MongoDB
+to use for data analytics
+'''
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import pymongo

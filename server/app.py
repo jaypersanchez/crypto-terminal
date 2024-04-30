@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from pycoingecko import CoinGeckoAPI
 from flask_cors import CORS
+import pymongo
 import pandas as pd
 import os
 import psycopg2
@@ -8,12 +9,83 @@ from transformers import AutoTokenizer, AutoModel
 import torch
 from sklearn.linear_model import LinearRegression
 import numpy as np
+from dotenv import load_dotenv
+from statsmodels.tsa.arima.model import ARIMA
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)
+# Load environment variables from .env file
+load_dotenv()
 # Initialize the tokenizer and model
 tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
 model = AutoModel.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
+
+# Closing price prediction for the next 7 days based latest data
+@app.route('/forecast', methods=['POST'])
+def fetch_crypto_data():
+    data = request.get_json()
+    crypto_name = data.get('crypto_name')
+    print(f"crypto_name {crypto_name}")
+    if not crypto_name:
+        return jsonify({'error': 'crypto_name parameter is required'}), 400
+
+    # Mapping from frontend human-readable names to database identifiers
+    crypto_name_mapping = {
+        'bitcoin': 'BTC',
+        'ethereum': 'ETH',
+        'solana': 'SOL',
+        'matic-network': 'MATIC'
+    }
+
+    db_identifier = crypto_name_mapping.get(crypto_name.lower())
+    
+    if not db_identifier:
+        return jsonify({'error': f"No mapping found for {crypto_name}"}), 404
+    print(f"db_identifier {db_identifier}")
+    client = pymongo.MongoClient('mongodb://localhost:27017/')
+    db = client['crypto-terminal']
+    print("MongoDB Connection Successful")
+    collection = db['ai_training_data']
+    # Calculate 30 days ago date
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    thirty_days_ago_str = thirty_days_ago.strftime('%Y-%m-%d')  # Adjust format as needed
+
+    try:
+        # Fetch data for the last 30 days
+        query = {"crypto": db_identifier, "date": {"$gte": thirty_days_ago_str}}
+        data = pd.DataFrame(list(collection.find(query).sort("date", -1)))
+        
+        if data.empty:
+            return jsonify({'error': 'No data found'}), 404
+        # Prepare data for ARIMA
+        data['date'] = pd.to_datetime(data['date'])
+        data.set_index('date', inplace=True)
+        data.sort_index(inplace=True)
+        
+        # Call the prediction function
+        forecast = predict_price(data)
+        return jsonify({'message': 'Forecast generated successfully', 'forecast': forecast})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        client.close()
+
+def predict_price(data):
+    try:
+        # Ensure 'close_price' column is a float and not string or object
+        data['close_price'] = data['close_price'].astype(float)
+
+        # Create and fit the ARIMA model
+        model = ARIMA(data['close_price'], order=(5,1,0))
+        model_fit = model.fit()  # 'disp=0' is no longer needed; 'disp' parameter has been removed
+        forecast_result = model_fit.forecast(steps=7)  # Forecast for the next 7 days
+
+        # The forecast_result is an array, directly convert it to list
+        forecast = list(forecast_result)  # Use list() to convert array to list
+        return forecast
+    except Exception as e:
+        return {'error': str(e)}  # Return error message if forecasting fails
 
 def get_recent_month_data(crypto_id):
     # Mapping crypto_id to its corresponding CSV file
