@@ -12,6 +12,7 @@ import numpy as np
 from dotenv import load_dotenv
 from statsmodels.tsa.arima.model import ARIMA
 from datetime import datetime, timedelta
+from web3 import Web3
 
 app = Flask(__name__)
 CORS(app)
@@ -94,7 +95,8 @@ def get_recent_month_data(crypto_id):
         'bitcoin': 'btc_yearly_extract_exchange_data.csv',
         'ethereum': 'eth_yearly_extract_exchange_data.csv',
         'solana': 'sol_yearly_extract_exchange_data.csv',
-        'matic-network': 'matic_yearly_extract_exchange_data.csv'
+        'matic-network': 'matic_yearly_extract_exchange_data.csv',
+        'ripple': 'xrp_yearly_extract_exchange_data.csv'
     }
     
     filename = crypto_file_mapping.get(crypto_id.lower())
@@ -245,7 +247,8 @@ def get_volatility(crypto_id):
         'bitcoin': 'btc_yearly_extract_exchange_data.csv',
         'ethereum': 'eth_yearly_extract_exchange_data.csv',
         'solana': 'sol_yearly_extract_exchange_data.csv',
-        'matic-network': 'matic_yearly_extract_exchange_data.csv'
+        'matic-network': 'matic_yearly_extract_exchange_data.csv',
+        'ripple': 'xrp_yearly_extract_exchange_data.csv'
     }
     
     filename = crypto_file_mapping.get(crypto_id.lower())
@@ -267,6 +270,40 @@ def get_volatility(crypto_id):
     volatility = df['daily_return'].std()
 
     return jsonify({'crypto_id': crypto_id, 'volatility_index': volatility})
+
+
+
+@app.route('/smart-contract-explorer', methods=['GET'])
+def find_new_contracts():
+    # Connect to an Ethereum node via Infura
+    infura_url = 'https://eth-sepolia.g.alchemy.com/v2/L0FSdySSJYDRRtmTeYDNYPZuiKagkK2d' #os.getenv('SEPOLIA_ALCHEMY_URL') #'https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID'
+    print('Web3 URL ${infura_url}')
+    web3 = Web3(Web3.HTTPProvider(infura_url))
+
+    # Check connection
+    if web3.is_connected():
+        print("Connected to Ethereum blockchain!")
+    else:
+        print("Failed to connect.")
+        
+    latest = web3.eth.block_number
+    from_block = latest - 100
+    to_block = latest
+            
+    print(f"Searching for new contracts from block {from_block} to block {to_block}")
+    for i in range(from_block, to_block + 1):
+        block = web3.eth.get_block(i, full_transactions=True)
+        if block is not None:
+            transactions = block.transactions
+            for tx in transactions:
+                if tx.to is None:  # 'to' is None implies contract creation
+                    receipt = web3.eth.get_transaction(tx.hash)
+                    print(f"\n\nNew contract created at address: {receipt} in block {i}")
+
+    # Example usage
+    #latest = web3.eth.blockNumber
+    #find_new_contracts(latest - 100, latest)  # Last 100 blocks
+
         
 if __name__ == '__main__':
     app.run(debug=True, port=5005)
