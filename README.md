@@ -29,11 +29,14 @@ Virland Financials is a financial research application meant to help investors f
 4. matic_analytics\extractroutines
     * This routines will extract from CoinGecko from the most recent record to current - matic_extract_exchange_data.py
     * This extract can be run if you need the current date back an entire year - matic_yearly_extract_exchange_data.py
+5. xrp_analytics\extractroutines
+    * This routines will extract from CoinGecko from the most recent record to current - xrp_extract_exchange_data.py
+    * This extract can be run if you need the current date back an entire year - xrp_yearly_extract_exchange_data.py
 
 # Virland AI Data Sources for Training
 
 semantics\extractroutines
     * This extract routine takes it sources from Hugging face and saves the tweets in JSON format - tweets_headlines_data_source_json.py
     * This routine takes the raw tweets data and cleans the data for further processing that is used for Virland training data - process_tweets_data.py
-    * this routine creates vector data from cleanded data source and inserts into the database - compute_embeddings.py
+    * this routine creates vector data from cleanded data source and inserts into the database - compute_embeddings.py located in utils directory
 
